@@ -1,0 +1,17 @@
+:root{color-scheme:dark;--bg:#0a0f14;--card:#121922;--muted:#93a4b7;--text:#f3f6fb;--line:#273241}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--text);background:#04080f}
+body::before{content:"";position:fixed;inset:0;z-index:-2;background:linear-gradient(to bottom,rgba(3,8,15,.55),rgba(4,8,15,.95) 34%,#04080f 58%),url('./Model3_77.jpg') top center/cover no-repeat}
+body::after{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(circle at 20% 0%,rgba(34,60,94,.35),rgba(4,8,15,.8) 48%)}
+.app{max-width:1380px;margin:0 auto;padding:24px;display:grid;gap:16px;min-height:100vh}
+.card{border:1px solid var(--line);background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border-radius:18px;padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.28)}
+.topbar{min-height:34vh;display:flex;justify-content:space-between;gap:10px;align-items:flex-start;backdrop-filter:blur(2px)}.greeting{margin:0 0 8px;color:#b9d8ff;font-weight:600}.topbar h1{margin:0;font-size:2rem}.topbar p{margin:.25rem 0 0;color:var(--muted)}
+.topbar-actions{display:flex;gap:10px}button{background:#1a2431;color:var(--text);border:1px solid #334257;border-radius:12px;padding:12px 14px;font-size:15px}
+.tabs{display:flex;flex-wrap:wrap;gap:10px}.tab{cursor:pointer}.tab.active{background:#f3f6fb;color:#101722}
+.label{text-transform:uppercase;font-size:.75rem;color:var(--muted);letter-spacing:.08em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.article{display:grid;gap:10px}.thumb{height:140px;border-radius:12px;background:#223043;overflow:hidden}.thumb img{width:100%;height:100%;object-fit:cover}
+.article h3{font-size:1.05rem;margin:0}.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.82rem}.desc{color:#ccd7e4;font-size:.92rem;line-height:1.45}
+.open{display:inline-block;text-decoration:none;color:var(--text);background:#1c2938;border:1px solid #3a4a5f;padding:8px 12px;border-radius:10px}
+.state{color:#ffb3b3}.skeleton{height:220px;border-radius:14px;background:linear-gradient(90deg,#1a2430,#223043,#1a2430);background-size:240% 100%;animation:sh 1.2s linear infinite}
+@keyframes sh{to{background-position:-240% 0}}@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
