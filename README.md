@@ -1,29 +1,25 @@
-# PulseDrive News Dashboard
+# PulseDrive News (Vanilla HTML/CSS/JS)
 
-Tesla-inspired dark news landing page optimized for in-car browser glanceability.
+A Tesla-inspired, dark, touch-friendly in-car news landing page built with **plain HTML, CSS, and JavaScript**.
 
-## Setup
-1. `npm install`
-2. Copy `.env.example` to `.env` and fill API keys.
-3. Run API proxy: `npm run server`
-4. Run frontend: `npm run dev`
-5. Or run both: `npm run dev:full`
+## Why this version
+This implementation removes Vite/React runtime dependency and works as a simple static page.
 
-## Architecture
-- React + TypeScript + Vite + Tailwind frontend.
-- Express proxy at `/api/news/:category` to protect API keys.
-- Providers: NewsAPI, GNews, NYT Top Stories.
-- Normalized `Article` model and dedupe+recency ranking.
-- Cache TTL via `CACHE_TTL_MS` to reduce quota usage.
-- Retry + timeout logic to handle transient failures/rate limits.
-- Mock fallback in client and optional empty fallback in server for missing secrets.
+## Data sources (no API key required)
+- GDELT DOC API (world/us-politics/business/technology queries)
+- Hacker News Algolia API (technology supplement)
+- Local fallback content when network/source is unavailable
 
-## Endpoints
-- `/api/news/world-politics`
-- `/api/news/us-politics`
-- `/api/news/business`
-- `/api/news/technology`
+## Run
+Open `index.html` directly, or serve the folder with any static server.
+
+Example:
+```bash
+python3 -m http.server 8080
+```
+Then open `http://localhost:8080`.
 
 ## Notes
-- Parked-mode assumptions: no autoplay, restrained transitions, reduced-motion support.
-- Uses large touch targets and readable type for ~1280px+ landscape layouts.
+- No user-supplied API keys required.
+- Includes loading skeletons, error/fallback state, top stories, tabs, source switcher, and refresh control.
+- Reduced-motion media query is included for parked-mode calm UX.
