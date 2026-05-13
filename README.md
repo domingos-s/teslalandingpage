@@ -10,7 +10,7 @@ This project is now intentionally **vanilla HTML/CSS/JavaScript only** for maxim
 - Kept a single static app: `index.html`, `styles.css`, `app.js`.
 - Uses keyless live sources:
   - The Guardian Content API (`api-key=test`)
-  - Hacker News Algolia API
+  - Category-specific RSS feeds (Politico/NPR/CNBC/WSJ/The Verge/Ars/BBC/Al Jazeera) via rss2json bridge
 - Includes local fallback content if live sources are unavailable.
 
 ## Run
