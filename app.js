@@ -1,17 +1,11 @@
 const tabs = [
-  { key: 'world-politics', label: 'World Politics' },
-  { key: 'us-politics', label: 'U.S. Politics' },
-  { key: 'business', label: 'Business' },
-  { key: 'technology', label: 'Technology' }
+  { key: 'world-politics', label: 'World Politics', query: 'world politics geopolitics diplomacy' },
+  { key: 'us-politics', label: 'U.S. Politics', query: 'united states politics congress white house' },
+  { key: 'business', label: 'Business', query: 'business economy markets finance' },
+  { key: 'technology', label: 'Technology', query: 'technology AI software chips' }
 ]
 
 const state = { tab: 'world-politics', data: {} }
-const keywordMap = {
-  'world-politics': ['world', 'war', 'election', 'geopolitics', 'foreign', 'nation'],
-  'us-politics': ['us', 'u.s.', 'america', 'congress', 'senate', 'white house', 'supreme court', 'trump', 'biden'],
-  business: ['business', 'market', 'economy', 'earnings', 'finance', 'stock', 'fed', 'inflation'],
-  technology: ['ai', 'tech', 'software', 'chip', 'apple', 'google', 'microsoft', 'openai', 'robot']
-}
 
 const els = {
   tabs: document.getElementById('tabs'), cards: document.getElementById('cards'), top: document.getElementById('topStories'),
@@ -53,7 +47,7 @@ function paint() {
   els.cards.innerHTML = items.length ? items.map(card).join('') : '<div class="card">No stories available.</div>'
 }
 
-async function withTimeout(promise, ms = 7000) {
+async function withTimeout(promise, ms = 8000) {
   let timer
   const timeout = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('timeout')), ms) })
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer))
@@ -65,51 +59,55 @@ async function fetchJson(url) {
   return r.json()
 }
 
-function classify(title, category) {
-  const t = (title || '').toLowerCase()
-  return keywordMap[category].some((k) => t.includes(k))
+async function fetchGuardian(query) {
+  const url = `https://content.guardianapis.com/search?q=${encodeURIComponent(query)}&page-size=24&show-fields=thumbnail,trailText&order-by=newest&api-key=test`
+  const json = await fetchJson(url)
+  return (json.response?.results || []).map((item) => ({
+    id: `guardian-${item.id}`,
+    title: item.webTitle,
+    description: item.fields?.trailText?.replace(/<[^>]+>/g, '') || 'Latest reporting from The Guardian.',
+    source: 'The Guardian',
+    publishedAt: item.webPublicationDate,
+    url: item.webUrl,
+    imageUrl: item.fields?.thumbnail || ''
+  }))
 }
 
-async function fetchHNByCategory(category) {
-  const ids = await fetchJson('https://hacker-news.firebaseio.com/v0/topstories.json')
-  const sampleIds = ids.slice(0, 140)
-  const chunks = []
-  for (let i = 0; i < sampleIds.length; i += 20) chunks.push(sampleIds.slice(i, i + 20))
+async function fetchHN(topic) {
+  const url = `https://hn.algolia.com/api/v1/search_by_date?query=${encodeURIComponent(topic)}&tags=story&hitsPerPage=12`
+  const json = await fetchJson(url)
+  return (json.hits || []).map((h) => ({
+    id: `hn-${h.objectID}`,
+    title: h.title || h.story_title || 'Untitled',
+    description: 'Supplementary discussion from Hacker News.',
+    source: 'Hacker News',
+    publishedAt: h.created_at || new Date().toISOString(),
+    url: h.url || `https://news.ycombinator.com/item?id=${h.objectID}`,
+    imageUrl: ''
+  }))
+}
 
-  const picked = []
-  for (const chunk of chunks) {
-    const items = await Promise.all(chunk.map((id) => fetchJson(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).catch(() => null)))
-    for (const item of items) {
-      if (!item || !item.title || !item.url) continue
-      if (classify(item.title, category)) {
-        picked.push({
-          id: `hn-${item.id}`,
-          title: item.title,
-          description: `Trending discussion with ${item.score || 0} points on Hacker News.`,
-          source: 'Hacker News',
-          publishedAt: new Date((item.time || Date.now() / 1000) * 1000).toISOString(),
-          url: item.url,
-          imageUrl: ''
-        })
-      }
-      if (picked.length >= 18) return picked
-    }
-  }
-  return picked
+function dedupe(items) {
+  const map = new Map()
+  items.forEach((a) => {
+    const key = (a.url || a.title).toLowerCase().replace(/^https?:\/\//, '').replace(/\?.*/, '')
+    if (!map.has(key)) map.set(key, a)
+  })
+  return [...map.values()].sort((a, b) => +new Date(b.publishedAt) - +new Date(a.publishedAt))
 }
 
 async function load() {
   els.state.textContent = ''
   els.cards.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>'
 
-  await Promise.all(tabs.map(async (t) => {
+  await Promise.all(tabs.map(async (tab) => {
     try {
-      const stories = await fetchHNByCategory(t.key)
-      state.data[t.key] = stories.length ? stories : mock(t.key)
-      if (!stories.length) els.state.textContent = 'Live stories are limited right now; mixed with fallback content.'
+      const [guardian, hn] = await Promise.all([fetchGuardian(tab.query), fetchHN(tab.query)])
+      const merged = dedupe([...guardian, ...hn]).slice(0, 18)
+      state.data[tab.key] = merged.length ? merged : mock(tab.key)
     } catch {
-      state.data[t.key] = mock(t.key)
-      els.state.textContent = 'Live feed unavailable. Showing fallback content.'
+      state.data[tab.key] = mock(tab.key)
+      els.state.textContent = 'Some sources are unavailable right now. Showing fallback content where needed.'
     }
   }))
 
