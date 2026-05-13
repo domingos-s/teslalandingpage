@@ -5,17 +5,17 @@ const tabs = [
   { key: 'technology', label: 'Technology' }
 ]
 
-const state = { tab: 'world-politics', source: 'all', data: {} }
-const qMap = {
-  'world-politics': 'geopolitics OR foreign policy OR election',
-  'us-politics': 'US politics OR congress OR senate OR white house',
-  business: 'business OR economy OR markets OR earnings',
-  technology: 'technology OR AI OR software OR chips'
+const state = { tab: 'world-politics', data: {} }
+const keywordMap = {
+  'world-politics': ['world', 'war', 'election', 'geopolitics', 'foreign', 'nation'],
+  'us-politics': ['us', 'u.s.', 'america', 'congress', 'senate', 'white house', 'supreme court', 'trump', 'biden'],
+  business: ['business', 'market', 'economy', 'earnings', 'finance', 'stock', 'fed', 'inflation'],
+  technology: ['ai', 'tech', 'software', 'chip', 'apple', 'google', 'microsoft', 'openai', 'robot']
 }
 
 const els = {
   tabs: document.getElementById('tabs'), cards: document.getElementById('cards'), top: document.getElementById('topStories'),
-  updated: document.getElementById('updated'), state: document.getElementById('state'), refresh: document.getElementById('refresh'), source: document.getElementById('source')
+  updated: document.getElementById('updated'), state: document.getElementById('state'), refresh: document.getElementById('refresh')
 }
 
 const mock = (category) => Array.from({ length: 8 }).map((_, i) => ({
@@ -53,26 +53,49 @@ function paint() {
   els.cards.innerHTML = items.length ? items.map(card).join('') : '<div class="card">No stories available.</div>'
 }
 
-async function fetchHNQuery(query) {
-  const url = `https://hn.algolia.com/api/v1/search_by_date?query=${encodeURIComponent(query)}&tags=story&hitsPerPage=24`
-  const r = await fetch(url)
-  if (!r.ok) throw new Error('HN request failed')
-  const j = await r.json()
-  return (j.hits || []).map((h, i) => ({
-    id: `hn-${i}-${h.objectID}`,
-    title: h.title || h.story_title || 'Untitled',
-    description: h._highlightResult?.title?.value?.replace(/<[^>]+>/g, '') || 'News discussion item',
-    source: h.author ? `HN / ${h.author}` : 'Hacker News',
-    publishedAt: h.created_at || new Date().toISOString(),
-    url: h.url || `https://news.ycombinator.com/item?id=${h.objectID}`,
-    imageUrl: ''
-  }))
-}
-
-async function withTimeout(promise, ms = 6000) {
+async function withTimeout(promise, ms = 7000) {
   let timer
   const timeout = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('timeout')), ms) })
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer))
+}
+
+async function fetchJson(url) {
+  const r = await withTimeout(fetch(url))
+  if (!r.ok) throw new Error(`request failed ${r.status}`)
+  return r.json()
+}
+
+function classify(title, category) {
+  const t = (title || '').toLowerCase()
+  return keywordMap[category].some((k) => t.includes(k))
+}
+
+async function fetchHNByCategory(category) {
+  const ids = await fetchJson('https://hacker-news.firebaseio.com/v0/topstories.json')
+  const sampleIds = ids.slice(0, 140)
+  const chunks = []
+  for (let i = 0; i < sampleIds.length; i += 20) chunks.push(sampleIds.slice(i, i + 20))
+
+  const picked = []
+  for (const chunk of chunks) {
+    const items = await Promise.all(chunk.map((id) => fetchJson(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).catch(() => null)))
+    for (const item of items) {
+      if (!item || !item.title || !item.url) continue
+      if (classify(item.title, category)) {
+        picked.push({
+          id: `hn-${item.id}`,
+          title: item.title,
+          description: `Trending discussion with ${item.score || 0} points on Hacker News.`,
+          source: 'Hacker News',
+          publishedAt: new Date((item.time || Date.now() / 1000) * 1000).toISOString(),
+          url: item.url,
+          imageUrl: ''
+        })
+      }
+      if (picked.length >= 18) return picked
+    }
+  }
+  return picked
 }
 
 async function load() {
@@ -81,13 +104,12 @@ async function load() {
 
   await Promise.all(tabs.map(async (t) => {
     try {
-      if (state.source === 'gdelt') throw new Error('GDELT disabled in keyless mode')
-      const hnStories = await withTimeout(fetchHNQuery(qMap[t.key]))
-      state.data[t.key] = hnStories.slice(0, 18)
-      if (!state.data[t.key].length) state.data[t.key] = mock(t.key)
+      const stories = await fetchHNByCategory(t.key)
+      state.data[t.key] = stories.length ? stories : mock(t.key)
+      if (!stories.length) els.state.textContent = 'Live stories are limited right now; mixed with fallback content.'
     } catch {
       state.data[t.key] = mock(t.key)
-      els.state.textContent = 'Live feed unavailable for some categories. Showing fallback content.'
+      els.state.textContent = 'Live feed unavailable. Showing fallback content.'
     }
   }))
 
@@ -97,6 +119,4 @@ async function load() {
 
 drawTabs()
 els.refresh.onclick = load
-els.source.innerHTML = '<option value="all">All Sources (No Key)</option><option value="hn">Hacker News Query Feed</option>'
-els.source.onchange = (e) => { state.source = e.target.value; load() }
 load()
