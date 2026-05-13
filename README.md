@@ -6,8 +6,7 @@ A Tesla-inspired, dark, touch-friendly in-car news landing page built with **pla
 This implementation removes Vite/React runtime dependency and works as a simple static page.
 
 ## Data sources (no API key required)
-- GDELT DOC API (world/us-politics/business/technology queries)
-- Hacker News Algolia API (technology supplement)
+- Hacker News Algolia API query feed for all categories (world politics, U.S. politics, business, technology)
 - Local fallback content when network/source is unavailable
 
 ## Run
