@@ -1,23 +1,25 @@
 # PulseDrive News (Vanilla Only)
 
-You're right — Vite isn't needed here.
+Personalized static in-car news dashboard.
 
-This project is now intentionally **vanilla HTML/CSS/JavaScript only** for maximum compatibility in simple browsers (including in-car browsers) and zero build tooling.
+## Highlights
+- Vanilla HTML/CSS/JS (no build tooling)
+- Personalized greeting: **Hello, Domingos!**
+- Refresh button (source dropdown removed)
+- Background hero uses `Model3_77.jpg` with the top third emphasized in header area
+- Keyless multi-source news aggregation with strict category filtering
 
-## What changed
-- Removed Vite/React/Tailwind/TypeScript scaffolding.
-- Removed Node news aggregator server and API-key requirements.
-- Kept a single static app: `index.html`, `styles.css`, `app.js`.
-- Uses keyless live sources:
-  - The Guardian Content API (`api-key=test`)
-  - Category-specific RSS feeds (Politico/NPR/CNBC/WSJ/The Verge/Ars/BBC/Al Jazeera) via rss2json bridge
-- Includes local fallback content if live sources are unavailable.
+## Keyless sources used
+- The Guardian Content API (`api-key=test`)
+- RSS feeds via rss2json bridge:
+  - World: BBC World, Al Jazeera, DW, NYT World, Guardian World
+  - U.S. Politics: Politico, NPR Politics, NYT U.S., Guardian U.S., CBS Politics
+  - Business: CNBC, WSJ Markets, NYT Business, FT U.S., Guardian Business
+  - Technology: The Verge, Ars Technica, NYT Technology, TechCrunch, Wired
 
 ## Run
 ```bash
 npm run check
 npm run start
 ```
-Then open: `http://localhost:8080`
-
-Or open `index.html` directly.
+Then open `http://localhost:8080`.
