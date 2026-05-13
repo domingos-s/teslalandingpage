@@ -1,25 +1,23 @@
-# PulseDrive News (Vanilla HTML/CSS/JS)
+# PulseDrive News (Vanilla Only)
 
-A Tesla-inspired, dark, touch-friendly in-car news landing page built with **plain HTML, CSS, and JavaScript**.
+You're right — Vite isn't needed here.
 
-## Why this version
-This implementation removes Vite/React runtime dependency and works as a simple static page.
+This project is now intentionally **vanilla HTML/CSS/JavaScript only** for maximum compatibility in simple browsers (including in-car browsers) and zero build tooling.
 
-## Data sources (no API key required)
-- The Guardian Content API using public `api-key=test` (no signup required for development)
-- Hacker News Algolia API as secondary source
-- Local fallback content when network/source is unavailable
+## What changed
+- Removed Vite/React/Tailwind/TypeScript scaffolding.
+- Removed Node news aggregator server and API-key requirements.
+- Kept a single static app: `index.html`, `styles.css`, `app.js`.
+- Uses keyless live sources:
+  - The Guardian Content API (`api-key=test`)
+  - Hacker News Algolia API
+- Includes local fallback content if live sources are unavailable.
 
 ## Run
-Open `index.html` directly, or serve the folder with any static server.
-
-Example:
 ```bash
-python3 -m http.server 8080
+npm run check
+npm run start
 ```
-Then open `http://localhost:8080`.
+Then open: `http://localhost:8080`
 
-## Notes
-- No user-supplied API keys required.
-- Includes loading skeletons, error/fallback state, top stories, tabs, source switcher, and refresh control.
-- Reduced-motion media query is included for parked-mode calm UX.
+Or open `index.html` directly.
