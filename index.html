@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PulseDrive News</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="topbar card">
+      <div>
+        <h1>PulseDrive News</h1>
+        <p id="updated">Last updated —</p>
+      </div>
+      <div class="topbar-actions">
+        <select id="source">
+          <option value="all">All Sources (No Key)</option>
+          <option value="gdelt">GDELT</option>
+          <option value="hn">Hacker News (Tech)</option>
+        </select>
+        <button id="refresh">Refresh</button>
+      </div>
+    </header>
+
+    <nav id="tabs" class="tabs"></nav>
+
+    <section class="hero card">
+      <p class="label">Top Stories</p>
+      <div id="topStories" class="grid"></div>
+    </section>
+
+    <section class="pulse card">Business Pulse: key-free global feed · low distraction mode</section>
+
+    <section id="state" class="state"></section>
+    <section id="cards" class="grid"></section>
+  </main>
+  <script src="./app.js" defer></script>
+</body>
+</html>
