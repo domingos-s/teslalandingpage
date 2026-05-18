@@ -48,10 +48,12 @@ async function load() {
     try {
       const guardian = await fetchGuardian(tab.query)
       const rssResults = (await Promise.all(tab.rss.map((r) => fetchRss(r).catch(() => [])))).flat()
-      const filtered = [...guardian, ...rssResults].filter((a) => matchesCategory(a, tab))
+      const combined = [...guardian, ...rssResults]
+      const filtered = combined.filter((a) => matchesCategory(a, tab))
       const merged = dedupe(filtered).slice(0, 24)
-      state.data[tab.key] = merged.length ? merged : mock(tab.key)
-      if (!merged.length) els.state.textContent = 'Live sources returned no stories for one or more categories.'
+      const broadFallback = dedupe(combined).slice(0, 24)
+      state.data[tab.key] = merged.length ? merged : (broadFallback.length ? broadFallback : mock(tab.key))
+      if (!merged.length) els.state.textContent = 'Live sources returned no category-matched stories for one or more tabs. Showing the latest headlines instead.'
     } catch {
       state.data[tab.key] = mock(tab.key)
       els.state.textContent = 'Some sources are unavailable right now. Showing fallback content where needed.'
